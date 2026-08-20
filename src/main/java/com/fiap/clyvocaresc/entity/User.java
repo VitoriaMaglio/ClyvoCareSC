@@ -3,7 +3,7 @@ package com.fiap.clyvocaresc.entity;
 import com.fiap.clyvocaresc.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
+//import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 

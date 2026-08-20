@@ -4,7 +4,7 @@ import com.fiap.clyvocaresc.entity.enums.PetSex;
 import com.fiap.clyvocaresc.entity.enums.PetSize;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
+//import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,8 +15,8 @@ import java.time.LocalDate;
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_users")
-    @SequenceGenerator(name = "seq_users", sequenceName = "SEQ_USERS", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_pets")
+    @SequenceGenerator(name = "seq_pets", sequenceName = "SEQ_PETS", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
@@ -38,8 +38,8 @@ public class Pet {
     @Column(length = 100)
     private String breed;
 
+    @Column(name = "pet_size", length = 10)
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
     private PetSize size;
 
     @Column(length = 500)

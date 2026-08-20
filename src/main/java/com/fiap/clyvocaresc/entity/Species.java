@@ -2,15 +2,15 @@ package com.fiap.clyvocaresc.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
+//import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "species")
 @Data
 public class Species {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_users")
-    @SequenceGenerator(name = "seq_users", sequenceName = "SEQ_USERS", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_species")
+    @SequenceGenerator(name = "seq_species", sequenceName = "SEQ_SPECIES", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

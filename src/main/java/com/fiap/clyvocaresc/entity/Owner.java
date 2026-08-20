@@ -12,8 +12,8 @@ import java.util.List;
 public class Owner {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_users")
-    @SequenceGenerator(name = "seq_users", sequenceName = "SEQ_USERS", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_owners")
+    @SequenceGenerator(name = "seq_owners", sequenceName = "SEQ_OWNERS", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

@@ -2,7 +2,7 @@ package com.fiap.clyvocaresc.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
+//import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "cities")
@@ -10,8 +10,8 @@ import org.springframework.data.annotation.Id;
 public class City {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_users")
-    @SequenceGenerator(name = "seq_users", sequenceName = "SEQ_USERS", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_cities")
+    @SequenceGenerator(name = "seq_cities", sequenceName = "SEQ_CITIES", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
