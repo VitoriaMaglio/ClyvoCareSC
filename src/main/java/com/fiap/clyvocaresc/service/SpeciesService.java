@@ -9,6 +9,7 @@ import com.fiap.clyvocaresc.exception.ResourceNotFoundException;
 import com.fiap.clyvocaresc.repository.SpeciesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 /**
@@ -27,11 +28,13 @@ public class SpeciesService {
     private final SpeciesRepository speciesRepository;
 
     /** Lista todas as espécies cadastradas. */
+    @Transactional(readOnly = true)
     public List<SpeciesResponseDTO> findAll() {
         return speciesRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     /** Busca uma espécie por id; lança 404 se não existir. */
+    @Transactional(readOnly = true)
     public SpeciesResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

@@ -10,6 +10,7 @@ import com.fiap.clyvocaresc.repository.CityRepository;
 import com.fiap.clyvocaresc.repository.OwnerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Gerencia o perfil do tutor (Owner) após o cadastro inicial. Não possui método `create()`
@@ -33,6 +34,7 @@ public class OwnerService {
     /**
      * Busca o perfil de um tutor por id (uso interno/administrativo, não é o próprio tutor logado).
      */
+    @Transactional(readOnly = true)
     public OwnerResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }
@@ -40,6 +42,7 @@ public class OwnerService {
     /**
      * Busca o perfil do tutor a partir do username autenticado, usado no endpoint "/owners/me".
      */
+    @Transactional(readOnly = true)
     public OwnerResponseDTO findByUsername(String username) {
         Owner owner = ownerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Tutor não encontrado para o usuário " + username));

@@ -9,6 +9,7 @@ import com.fiap.clyvocaresc.repository.ClinicRepository;
 import com.fiap.clyvocaresc.repository.VeterinarianRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,16 +30,19 @@ public class VeterinarianService {
     private final ClinicRepository clinicRepository;
 
     /** Lista todos os veterinários cadastrados. */
+    @Transactional(readOnly = true)
     public List<VeterinarianResponseDTO> findAll() {
         return veterinarianRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     /** Busca um veterinário por id (uso interno/administrativo). */
+    @Transactional(readOnly = true)
     public VeterinarianResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }
 
     /** Busca o perfil do veterinário a partir do username autenticado, usado no endpoint "/veterinarians/me". */
+    @Transactional(readOnly = true)
     public VeterinarianResponseDTO findByUsername(String username) {
         Veterinarian vet = veterinarianRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Veterinário não encontrado para o usuário " + username));

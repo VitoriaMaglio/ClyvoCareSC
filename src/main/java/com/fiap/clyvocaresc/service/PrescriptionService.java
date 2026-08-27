@@ -12,6 +12,7 @@ import com.fiap.clyvocaresc.repository.PrescriptionRepository;
 import com.fiap.clyvocaresc.repository.TreatmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class PrescriptionService {
     private final CatalogItemRepository catalogItemRepository;
 
     /** Lista as prescrições associadas a um tratamento específico. */
+    @Transactional(readOnly = true)
     public List<PrescriptionResponseDTO> findByTreatment(Long treatmentId) {
         return prescriptionRepository.findByTreatmentId(treatmentId).stream().map(this::toResponse).toList();
     }

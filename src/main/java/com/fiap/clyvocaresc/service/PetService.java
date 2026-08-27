@@ -11,6 +11,7 @@ import com.fiap.clyvocaresc.repository.PetRepository;
 import com.fiap.clyvocaresc.repository.SpeciesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ public class PetService {
     private final SpeciesRepository speciesRepository;
 
     /** Lista todos os pets de um tutor específico, base da tela "meus pets" do app. */
+    @Transactional(readOnly = true)
     public List<PetResponseDTO> findByOwner(Long ownerId) {
         return petRepository.findByOwnerId(ownerId).stream().map(this::toResponse).toList();
     }
@@ -45,6 +47,7 @@ public class PetService {
     }
 
     /** Cria um novo pet, marcando a data de cadastro como hoje e validando Owner/Species existentes. */
+    @Transactional(readOnly = true)
     public PetResponseDTO create(PetRequestDTO dto) {
         Pet pet = new Pet();
         pet.setRegisteredAt(LocalDate.now());

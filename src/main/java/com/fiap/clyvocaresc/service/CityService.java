@@ -9,6 +9,7 @@ import com.fiap.clyvocaresc.exception.ResourceNotFoundException;
 import com.fiap.clyvocaresc.repository.CityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 /**
@@ -27,11 +28,13 @@ public class CityService {
     private final CityRepository cityRepository;
 
     /** Lista todas as cidades cadastradas, sem paginação (volume baixo, cadastro administrativo). */
+    @Transactional(readOnly = true)
     public List<CityResponseDTO> findAll() {
         return cityRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     /** Busca uma cidade específica por id; lança 404 (via ResourceNotFoundException) se não existir. */
+    @Transactional(readOnly = true)
     public CityResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

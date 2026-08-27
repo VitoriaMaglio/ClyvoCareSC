@@ -43,12 +43,14 @@ public class AppointmentService {
     private final ReminderRepository reminderRepository;
 
     /** Lista o histórico de consultas de um pet, mais recente primeiro — base da "ficha clínica". */
+    @Transactional(readOnly = true)
     public List<AppointmentResponseDTO> findByPet(Long petId) {
         return appointmentRepository.findByPetIdOrderByAppointmentDateDesc(petId)
                 .stream().map(this::toResponse).toList();
     }
 
     /** Busca uma consulta específica por id. */
+    @Transactional(readOnly = true)
     public AppointmentResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

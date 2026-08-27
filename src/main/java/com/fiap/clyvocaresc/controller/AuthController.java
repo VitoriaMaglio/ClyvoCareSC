@@ -1,7 +1,9 @@
 package com.fiap.clyvocaresc.controller;
 
-
-import com.fiap.clyvocaresc.dto.*;
+import com.fiap.clyvocaresc.dto.request.LoginRequestDTO;
+import com.fiap.clyvocaresc.dto.request.RegisterOwnerRequestDTO;
+import com.fiap.clyvocaresc.dto.request.RegisterVeterinarianRequestDTO;
+import com.fiap.clyvocaresc.dto.response.AuthResponseDTO;
 import com.fiap.clyvocaresc.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

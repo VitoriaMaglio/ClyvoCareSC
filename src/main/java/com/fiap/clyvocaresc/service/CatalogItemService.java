@@ -11,6 +11,7 @@ import com.fiap.clyvocaresc.repository.CatalogItemRepository;
 import com.fiap.clyvocaresc.repository.SpeciesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,11 +35,13 @@ public class CatalogItemService {
     private final SpeciesRepository speciesRepository;
 
     /** Lista todos os itens de catálogo, vacinas e medicamentos misturados. */
+    @Transactional(readOnly = true)
     public List<CatalogItemResponseDTO> findAll() {
         return catalogItemRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     /** Filtra o catálogo por tipo (ex: só vacinas), usado pela tela de aplicação de vacina no frontend. */
+    @Transactional(readOnly = true)
     public List<CatalogItemResponseDTO> findByType(CatalogItemType type) {
         return catalogItemRepository.findAll().stream()
                 .filter(item -> item.getType() == type)
@@ -47,6 +50,7 @@ public class CatalogItemService {
     }
 
     /** Busca um item específico por id; lança 404 se não existir. */
+    @Transactional(readOnly = true)
     public CatalogItemResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

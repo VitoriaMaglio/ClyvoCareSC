@@ -9,6 +9,7 @@ import com.fiap.clyvocaresc.repository.CityRepository;
 import com.fiap.clyvocaresc.repository.ClinicRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,11 +31,13 @@ public class ClinicService {
     private final CityRepository cityRepository;
 
     /** Lista todas as clínicas cadastradas. */
+    @Transactional(readOnly = true)
     public List<ClinicResponseDTO> findAll() {
         return clinicRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     /** Busca uma clínica por id; lança 404 se não existir. */
+    @Transactional(readOnly = true)
     public ClinicResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

@@ -41,6 +41,7 @@ public class VaccinationService {
     private final ReminderRepository reminderRepository;
 
     /** Lista o histórico de vacinação de um pet, mais recente primeiro. */
+    @Transactional(readOnly = true)
     public List<VaccinationResponseDTO> findByPet(Long petId) {
         return vaccinationRepository.findByPetIdOrderByApplicationDateDesc(petId)
                 .stream().map(this::toResponse).toList();

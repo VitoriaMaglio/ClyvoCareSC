@@ -7,6 +7,7 @@ import com.fiap.clyvocaresc.exception.ResourceNotFoundException;
 import com.fiap.clyvocaresc.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class ReminderService {
     private final ReminderRepository reminderRepository;
 
     /** Lista os lembretes pendentes de um tutor, base da tela de notificações do app. */
+    @Transactional(readOnly = true)
     public List<ReminderResponseDTO> findPendingByOwner(Long ownerId) {
         return reminderRepository.findByOwnerIdAndStatus(ownerId, ReminderStatus.PENDING)
                 .stream().map(this::toResponse).toList();

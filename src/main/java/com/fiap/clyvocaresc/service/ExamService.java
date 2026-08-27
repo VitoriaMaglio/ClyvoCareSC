@@ -11,6 +11,7 @@ import com.fiap.clyvocaresc.repository.ExamRepository;
 import com.fiap.clyvocaresc.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,11 +33,13 @@ public class ExamService {
     private final AppointmentRepository appointmentRepository;
 
     /** Lista o histórico de exames de um pet. */
+    @Transactional(readOnly = true)
     public List<ExamResponseDTO> findByPet(Long petId) {
         return examRepository.findByPetId(petId).stream().map(this::toResponse).toList();
     }
 
     /** Busca um exame específico por id. */
+    @Transactional(readOnly = true)
     public ExamResponseDTO findById(Long id) {
         return toResponse(getOrThrow(id));
     }

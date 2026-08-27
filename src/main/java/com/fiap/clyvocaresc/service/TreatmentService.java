@@ -12,6 +12,7 @@ import com.fiap.clyvocaresc.repository.PetRepository;
 import com.fiap.clyvocaresc.repository.TreatmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,6 +37,7 @@ public class TreatmentService {
     private final AppointmentRepository appointmentRepository;
 
     /** Lista o histórico de tratamentos de um pet. */
+    @Transactional(readOnly = true)
     public List<TreatmentResponseDTO> findByPet(Long petId) {
         return treatmentRepository.findByPetId(petId).stream().map(this::toResponse).toList();
     }
