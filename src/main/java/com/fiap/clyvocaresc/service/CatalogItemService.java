@@ -56,6 +56,7 @@ public class CatalogItemService {
     }
 
     /** Cria um item de catálogo, validando antes a coerência entre `type` e os campos específicos. */
+    @Transactional
     public CatalogItemResponseDTO create(CatalogItemRequestDTO dto) {
         validateTypeCoherence(dto);
 
@@ -65,6 +66,7 @@ public class CatalogItemService {
     }
 
     /** Atualiza um item existente, revalidando a coerência de tipo antes de salvar. */
+    @Transactional
     public CatalogItemResponseDTO update(Long id, CatalogItemRequestDTO dto) {
         validateTypeCoherence(dto);
 
@@ -74,11 +76,13 @@ public class CatalogItemService {
     }
 
     /** Remove um item do catálogo. */
+    @Transactional
     public void delete(Long id) {
         catalogItemRepository.delete(getOrThrow(id));
     }
 
     /** Garante que um item VACCINE sempre tenha boosterIntervalDays, pré-requisito do cálculo de reforço. */
+    @Transactional
     private void validateTypeCoherence(CatalogItemRequestDTO dto) {
         if (dto.type() == CatalogItemType.VACCINE && dto.boosterIntervalDays() == null) {
             throw new IllegalArgumentException(
@@ -87,12 +91,14 @@ public class CatalogItemService {
     }
 
     /** Busca interna com tratamento de "não encontrado" centralizado. */
+    @Transactional
     private CatalogItem getOrThrow(Long id) {
         return catalogItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item de catálogo não encontrado com id " + id));
     }
 
     /** Copia os campos do DTO pra entidade, resolvendo a Species relacionada quando informada. */
+    @Transactional
     private void apply(CatalogItem item, CatalogItemRequestDTO dto) {
         item.setName(dto.name());
         item.setManufacturer(dto.manufacturer());
@@ -111,6 +117,7 @@ public class CatalogItemService {
     }
 
     /** Converte a entidade em DTO de saída. */
+    @Transactional
     private CatalogItemResponseDTO toResponse(CatalogItem item) {
         return new CatalogItemResponseDTO(
                 item.getId(), item.getName(), item.getManufacturer(), item.getType(),

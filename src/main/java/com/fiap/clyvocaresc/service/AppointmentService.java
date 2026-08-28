@@ -109,6 +109,7 @@ public class AppointmentService {
     }
 
     /** Cria o Reminder automático de retorno, 15 dias após a data da consulta concluída. */
+    @Transactional
     private void createFollowUpReminder(Appointment appointment) {
         Reminder reminder = new Reminder();
         reminder.setType(ReminderType.APPOINTMENT);
@@ -123,6 +124,7 @@ public class AppointmentService {
     }
 
     /** Cancela uma consulta agendada, marcando status CANCELED. */
+    @Transactional
     public void cancel(Long id) {
         Appointment appointment = getOrThrow(id);
         appointment.setStatus(AppointmentStatus.CANCELED);
@@ -130,12 +132,14 @@ public class AppointmentService {
     }
 
     /** Busca interna com tratamento de "não encontrado" centralizado. */
+    @Transactional
     private Appointment getOrThrow(Long id) {
         return appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com id " + id));
     }
 
     /** Converte a entidade em DTO de saída. */
+    @Transactional
     private AppointmentResponseDTO toResponse(Appointment a) {
         return new AppointmentResponseDTO(
                 a.getId(), a.getAppointmentDate(), a.getType(), a.getReason(), a.getDiagnosis(), a.getNotes(),

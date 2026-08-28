@@ -38,4 +38,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
     }
+
+    // GlobalExceptionHandler — adiciona este método
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrity(
+            org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "Já existe um registro com esses dados (documento, username ou taxId duplicado)."));
+    }
 }

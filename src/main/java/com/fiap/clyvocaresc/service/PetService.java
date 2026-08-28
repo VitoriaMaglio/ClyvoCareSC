@@ -29,6 +29,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PetService {
 
     private final PetRepository petRepository;

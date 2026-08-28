@@ -23,6 +23,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SpeciesService {
 
     private final SpeciesRepository speciesRepository;

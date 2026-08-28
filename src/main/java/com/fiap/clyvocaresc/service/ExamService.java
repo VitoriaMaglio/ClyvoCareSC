@@ -26,6 +26,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+
 public class ExamService {
 
     private final ExamRepository examRepository;
@@ -45,6 +46,7 @@ public class ExamService {
     }
 
     /** Registra um novo exame (solicitação e, opcionalmente, resultado já preenchido). */
+    @Transactional
     public ExamResponseDTO create(ExamRequestDTO dto) {
         Exam exam = new Exam();
         apply(exam, dto);
@@ -52,6 +54,7 @@ public class ExamService {
     }
 
     /** Atualiza um exame existente, tipicamente pra preencher o resultado depois da solicitação. */
+    @Transactional
     public ExamResponseDTO update(Long id, ExamRequestDTO dto) {
         Exam exam = getOrThrow(id);
         apply(exam, dto);
@@ -59,6 +62,7 @@ public class ExamService {
     }
 
     /** Remove um exame do histórico. */
+    @Transactional
     public void delete(Long id) {
         examRepository.delete(getOrThrow(id));
     }
@@ -70,6 +74,7 @@ public class ExamService {
     }
 
     /** Copia os campos do DTO pra entidade, resolvendo Pet obrigatório e Appointment opcional. */
+    @Transactional
     private void apply(Exam exam, ExamRequestDTO dto) {
         exam.setExamType(dto.examType());
         exam.setRequestDate(dto.requestDate());
@@ -90,6 +95,7 @@ public class ExamService {
     }
 
     /** Converte a entidade em DTO de saída. */
+    @Transactional
     private ExamResponseDTO toResponse(Exam exam) {
         return new ExamResponseDTO(
                 exam.getId(), exam.getExamType(), exam.getRequestDate(), exam.getResultDate(),

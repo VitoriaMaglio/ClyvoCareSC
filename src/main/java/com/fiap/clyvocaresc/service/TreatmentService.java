@@ -43,6 +43,7 @@ public class TreatmentService {
     }
 
     /** Inicia um novo tratamento com status ACTIVE. */
+    @Transactional
     public TreatmentResponseDTO create(TreatmentRequestDTO dto) {
         Treatment treatment = new Treatment();
         treatment.setStatus(TreatmentStatus.ACTIVE);
@@ -51,6 +52,7 @@ public class TreatmentService {
     }
 
     /** Atualiza descrição/datas de um tratamento existente, sem alterar o status. */
+    @Transactional
     public TreatmentResponseDTO update(Long id, TreatmentRequestDTO dto) {
         Treatment treatment = getOrThrow(id);
         apply(treatment, dto);
@@ -58,6 +60,7 @@ public class TreatmentService {
     }
 
     /** Marca o tratamento como COMPLETED e fixa a data de término como hoje. */
+    @Transactional
     public TreatmentResponseDTO complete(Long id) {
         Treatment treatment = getOrThrow(id);
         treatment.setStatus(TreatmentStatus.COMPLETED);
@@ -66,6 +69,7 @@ public class TreatmentService {
     }
 
     /** Marca o tratamento como SUSPENDED (ex: reação adversa, interrupção pelo tutor). */
+    @Transactional
     public TreatmentResponseDTO suspend(Long id) {
         Treatment treatment = getOrThrow(id);
         treatment.setStatus(TreatmentStatus.SUSPENDED);
@@ -73,12 +77,14 @@ public class TreatmentService {
     }
 
     /** Busca interna com tratamento de "não encontrado" centralizado. */
+    @Transactional
     private Treatment getOrThrow(Long id) {
         return treatmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tratamento não encontrado com id " + id));
     }
 
     /** Copia os campos do DTO pra entidade, resolvendo Pet obrigatório e Appointment opcional. */
+    @Transactional
     private void apply(Treatment treatment, TreatmentRequestDTO dto) {
         treatment.setDescription(dto.description());
         treatment.setStartDate(dto.startDate());
@@ -96,6 +102,7 @@ public class TreatmentService {
     }
 
     /** Converte a entidade em DTO de saída. */
+    @Transactional
     private TreatmentResponseDTO toResponse(Treatment t) {
         return new TreatmentResponseDTO(
                 t.getId(), t.getDescription(), t.getStartDate(), t.getEndDate(), t.getStatus(),

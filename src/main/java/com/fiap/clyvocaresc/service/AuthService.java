@@ -106,6 +106,7 @@ public class AuthService {
     /**
      * Valida username/password via AuthenticationManager e, se corretos, gera o token JWT com o role embutido.
      */
+    @Transactional
     public AuthResponseDTO login(LoginRequestDTO req) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.username(), req.password()));

@@ -43,6 +43,7 @@ public class ClinicService {
     }
 
     /** Cria uma nova clínica, marcando a data de assinatura como a data atual. */
+    @Transactional
     public ClinicResponseDTO create(ClinicRequestDTO dto) {
         Clinic clinic = new Clinic();
         clinic.setSubscriptionDate(LocalDate.now());
@@ -51,6 +52,7 @@ public class ClinicService {
     }
 
     /** Atualiza os dados de uma clínica existente. */
+    @Transactional
     public ClinicResponseDTO update(Long id, ClinicRequestDTO dto) {
         Clinic clinic = getOrThrow(id);
         apply(clinic, dto);
@@ -58,17 +60,20 @@ public class ClinicService {
     }
 
     /** Remove uma clínica do cadastro. */
+    @Transactional
     public void delete(Long id) {
         clinicRepository.delete(getOrThrow(id));
     }
 
     /** Busca interna com tratamento de "não encontrado" centralizado. */
+    @Transactional
     private Clinic getOrThrow(Long id) {
         return clinicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Clínica não encontrada com id " + id));
     }
 
     /** Copia os campos do DTO pra entidade, resolvendo a City relacionada quando informada. */
+    @Transactional
     private void apply(Clinic clinic, ClinicRequestDTO dto) {
         clinic.setName(dto.name());
         clinic.setTaxId(dto.taxId());
@@ -85,6 +90,7 @@ public class ClinicService {
     }
 
     /** Converte a entidade em DTO de saída. */
+    @Transactional
     private ClinicResponseDTO toResponse(Clinic clinic) {
         return new ClinicResponseDTO(
                 clinic.getId(), clinic.getName(), clinic.getTaxId(), clinic.getPhone(), clinic.getEmail(),

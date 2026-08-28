@@ -24,6 +24,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReminderService {
 
     private final ReminderRepository reminderRepository;

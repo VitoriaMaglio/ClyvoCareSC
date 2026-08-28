@@ -27,6 +27,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
