@@ -160,6 +160,81 @@ Também é necessário definir o segredo do JWT:
 app.jwt.secret=<sua-chave-secreta>
 app.jwt.expiration-ms=86400000
 
+⚙️ Instalação e Execução
+Pré-requisitos
+JDK 25 instalado (o projeto usa Gradle Toolchain, então ele mesmo baixa a versão certa se você tiver o SDK configurado na IDE)
+Acesso a um banco Oracle (o projeto foi desenvolvido usando o Oracle disponibilizado pela FIAP: oracle.fiap.com.br:1521:orcl)
+IntelliJ IDEA (recomendado) ou qualquer IDE com suporte a Gradle
+1. Clonar o repositório
+bash
+git clone <url-do-repositorio>
+cd ClyvoCareSC
+2. Configurar as credenciais (obrigatório antes de rodar)
+
+Por segurança, as credenciais do banco e o segredo do JWT não ficam fixos no código — são lidas de variáveis de ambiente. O application.properties já está preparado para isso:
+
+properties
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+app.jwt.secret=${JWT_SECRET}
+
+Configure essas 3 variáveis antes de rodar. No IntelliJ:
+
+Abra o dropdown de Run Configurations (topo da tela) → Edit Configurations...
+Selecione a configuration ClyvocarescApplication
+No campo Environment variables, adicione:
+DB_USERNAME=<seu_usuario_oracle>;DB_PASSWORD=<sua_senha_oracle>;JWT_SECRET=<uma_chave_secreta_longa_qualquer>
+Clique em Apply → OK
+
+Alternativa via terminal (Windows PowerShell):
+
+powershell
+$env:DB_USERNAME="seu_usuario"
+$env:DB_PASSWORD="sua_senha"
+$env:JWT_SECRET="uma-chave-secreta-bem-grande-aqui"
+
+Alternativa via terminal (Linux/Mac):
+
+bash
+export DB_USERNAME=seu_usuario
+export DB_PASSWORD=sua_senha
+export JWT_SECRET=uma-chave-secreta-bem-grande-aqui
+3. Rodar a aplicação
+bash
+./gradlew bootRun
+
+Ao subir, o Flyway aplica automaticamente as 14 migrations (V1 a V14) no schema configurado, criando todas as tabelas do zero caso ainda não existam. O log deve terminar com:
+
+Successfully applied 14 migrations to schema "..."
+
+A API sobe em http://localhost:8080.
+
+4. Testar o acesso
+
+Não existem usuários pré-cadastrados — o primeiro acesso é feito criando um usuário via endpoint de registro:
+
+POST http://localhost:8080/api/auth/register/owner
+Content-Type: application/json
+
+{
+  "username": "joao.tutor",
+  "password": "senha123",
+  "name": "João Silva",
+  "phone": "11999998888",
+  "document": "12345678901"
+}
+
+Depois, autentique-se para obter o token:
+
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "username": "joao.tutor", "password": "senha123" }
+
+A resposta traz o token JWT, que deve ser enviado no header Authorization: Bearer <token> em todas as demais requisições.
+
+Um guia de testes completo — cobrindo cadastro, login, controle de acesso por perfil e os dois fluxos automáticos do sistema — está disponível em guia-de-testes-clyvocare.md, na raiz do repositório.
+
 🧪 Testes da API
 
 Um guia de testes completo, cobrindo autenticação, controle de acesso por perfil e os dois fluxos automáticos, está disponível em guia-de-testes-clyvocare.md, com endpoints, JSONs de exemplo e o resultado esperado de cada chamada — incluindo os cenários negativos (401, 403, 400 e 404) usados para comprovar a Security e as validações.
