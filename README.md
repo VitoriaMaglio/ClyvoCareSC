@@ -23,6 +23,8 @@ calcular automaticamente a data da próxima dose de vacina e gerar o lembrete de
 controlar o acesso à API por perfil de usuário (tutor x profissional de saúde);
 versionar o schema do banco de dados de forma controlada e rastreável.
 
+Vídeo explicativo do projeto : https://youtu.be/IeVchmHa9M8?is=WBXgFtqu-lFC_sL0
+
 🛠️ Tecnologias Utilizadas
 
 Tecnologia | Descrição
