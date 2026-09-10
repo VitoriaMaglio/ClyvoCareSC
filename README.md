@@ -250,6 +250,22 @@ Camada de API (controllers) — concluída
 Spring Security (JWT, 2 perfis, proteção de rotas) — concluída
 Camada de visualização (frontend) — em desenvolvimento
 
+📈 Troubleshooting — Flyway / Oracle
+
+Durante a execução do projeto, pode ocorrer um erro do Flyway informando que uma SEQUENCE ou tabela já existe, como:
+
+ORA-00955: name is already used by an existing object
+
+Isso pode acontecer quando uma migration é interrompida após a criação de alguns objetos no banco, deixando objetos como SEQ_OWNERS registrados mesmo sem a migration ter sido concluída.
+
+Solução: limpar os objetos criados pela migration que falhou e o histórico do Flyway no banco local e executar a aplicação novamente para que as migrations sejam recriadas corretamente.
+
+Após a limpeza, executar:
+
+./gradlew clean bootRun
+
+Observação: esse procedimento é recomendado apenas para o ambiente local de desenvolvimento, pois a limpeza remove tabelas, sequences e o histórico de migrations.
+
 👨‍💻 Integrantes
 
 Nome | RM
