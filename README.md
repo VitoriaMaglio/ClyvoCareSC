@@ -241,6 +241,98 @@ Um guia de testes completo, cobrindo autenticação, controle de acesso por perf
 
 Uma collection exportada do Insomnia com todas as requisições já configuradas também está disponível no repositório.
 
+## Ordem de Testes da API
+
+Para executar os testes no Postman ou Insomnia, siga a ordem abaixo. Os IDs retornados nas etapas anteriores devem ser utilizados nas etapas seguintes.
+
+### 1. Segurança e autenticação
+
+1. `GET /api/species` sem token → **401 Unauthorized**
+2. `POST /api/auth/register/veterinarian` → cadastrar veterinário
+3. `POST /api/auth/register/owner` → cadastrar tutor
+4. `POST /api/auth/login` → login do veterinário → salvar `vetToken`
+5. `POST /api/auth/login` → login do tutor → salvar `ownerToken`
+6. Login com senha incorreta → **401/403**
+
+### 2. Permissões por perfil (RBAC)
+
+7. Tutor → `POST /api/catalog-items` → **403 Forbidden**
+8. Veterinário → `POST /api/catalog-items` → **201 Created** → salvar `catalogItemId`
+9. Veterinário → `POST /api/pets` → **403 Forbidden**
+
+### 3. Cadastros necessários
+
+10. Veterinário → `POST /api/cities` → salvar `cityId`
+11. Veterinário → `POST /api/species` → salvar `speciesId`
+12. Veterinário → `POST /api/catalog-items` (MEDICATION) → salvar `medicationId`
+13. Veterinário → `POST /api/clinics` → salvar `clinicId`
+
+### 4. Pet
+
+14. Tutor → `POST /api/pets` → salvar `petId`
+15. Tutor → `GET /api/owners/{ownerId}/pets`
+16. Tutor → `GET /api/pets/{petId}`
+
+### 5. Fluxo de consulta → Reminder automático
+
+17. Veterinário → `POST /api/appointments` → salvar `appointmentId`
+18. Veterinário → `PATCH /api/appointments/{appointmentId}/complete`
+19. Tutor → `GET /api/owners/me/reminders` → verificar Reminder de `APPOINTMENT`
+
+### 6. Fluxo de vacinação → Reminder automático
+
+20. Veterinário → `POST /api/vaccinations` usando o `catalogItemId` da vacina
+21. Tutor → `GET /api/owners/me/reminders` → verificar Reminder de `VACCINE`
+22. Veterinário → tentar vacinação com `medicationId` → **400 Bad Request**
+
+### 7. Tratamento, prescrição e exame
+
+23. Veterinário → `POST /api/treatments` → salvar `treatmentId`
+24. Veterinário → `POST /api/prescriptions`
+25. Veterinário → `PATCH /api/treatments/{treatmentId}/complete`
+26. Veterinário → `POST /api/exams`
+
+### 8. Ciclo de vida do Reminder
+
+27. `PATCH /api/reminders/{id}/sent` → status **SENT**
+28. `PATCH /api/reminders/{id}/confirmed` → status **CONFIRMED**
+
+### 9. Validações e erros
+
+29. `POST /api/species` com campo vazio → **400 Bad Request**
+30. `POST /api/auth/register/owner` com documento inválido → **400 Bad Request**
+31. Cadastro com username duplicado → **400 Bad Request**
+32. `GET /api/pets/9999` → **404 Not Found**
+
+### Fluxo principal
+
+```text
+Login
+  ↓
+Cadastros base
+  ↓
+Pet
+  ↓
+Consulta
+  ↓
+Conclusão da consulta
+  ↓
+Reminder automático
+  ↓
+Vacinação
+  ↓
+Reminder automático
+  ↓
+Tratamento / Prescrição / Exame
+  ↓
+Atualização do Reminder
+  ↓
+Testes de validação
+```
+
+> **Importante:** substitua `{ownerId}`, `{petId}`, `{appointmentId}`, `{treatmentId}` e `{id}` pelos IDs retornados pela API durante os testes.
+
+
 📈 Status do Projeto
 
 Camada de dados (Flyway) — concluída, 14 migrations aplicadas
