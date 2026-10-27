@@ -63,4 +63,11 @@ public class ReminderService {
                 r.getPet().getId(), r.getPet().getName()
         );
     }
+    /** Busca tutores por id. */
+    public List<ReminderResponseDTO> findAllByOwner(Long ownerId) {
+        return reminderRepository.findByOwnerId(ownerId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }

@@ -23,10 +23,27 @@ public class ReminderController {
     private final ReminderService reminderService;
     private final OwnerService ownerService;
 
-    /** Lista os lembretes pendentes do tutor autenticado. */
+    /** Lista todos os lembretes do tutor autenticado. */
     @GetMapping("/api/owners/me/reminders")
-    public List<ReminderResponseDTO> getMyPendingReminders(Authentication authentication) {
-        Long ownerId = ownerService.findByUsername(authentication.getName()).id();
+    public List<ReminderResponseDTO> getMyReminders(
+            Authentication authentication) {
+
+        Long ownerId = ownerService
+                .findByUsername(authentication.getName())
+                .id();
+
+        return reminderService.findAllByOwner(ownerId);
+    }
+
+    /** Lista somente os lembretes pendentes do tutor. */
+    @GetMapping("/api/owners/me/reminders/pending")
+    public List<ReminderResponseDTO> getMyPendingReminders(
+            Authentication authentication) {
+
+        Long ownerId = ownerService
+                .findByUsername(authentication.getName())
+                .id();
+
         return reminderService.findPendingByOwner(ownerId);
     }
 
@@ -41,4 +58,6 @@ public class ReminderController {
     public ReminderResponseDTO markAsConfirmed(@PathVariable Long id) {
         return reminderService.markAsConfirmed(id);
     }
+
+
 }

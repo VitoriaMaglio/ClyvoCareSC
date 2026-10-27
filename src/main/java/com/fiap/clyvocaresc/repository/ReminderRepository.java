@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     List<Reminder> findByOwnerIdAndStatus(Long ownerId, ReminderStatus status);
+    List<Reminder> findByOwnerId(Long ownerId);
 }
