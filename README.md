@@ -153,8 +153,11 @@ Toda rota protegida exige o header Authorization: Bearer <token>. Requisições 
 O schema é inteiramente controlado por 14 migrations versionadas (V1 a V14), aplicadas na ordem de dependência de chave estrangeira: usuários e catálogos de referência primeiro, depois entidades que dependem deles. O Hibernate roda em modo validate — ele nunca altera o schema por conta própria, apenas confere que as entidades Java batem com o que o Flyway já criou, garantindo que o banco seja sempre resultado de uma migration rastreável, nunca de auto-geração implícita.
 
 ⚙️ Configuração do Projeto
+
 Para encontrar a API rodando online (deploy no Render) -> https://clyvocaresc.onrender.com/
-Antes de executar o projeto, configure as credenciais do Oracle no arquivo:
+
+
+Antes de executar o projeto localmente, configure as credenciais do Oracle no arquivo:
 
 src/main/resources/application.properties
 
