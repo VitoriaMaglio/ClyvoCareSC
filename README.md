@@ -39,6 +39,7 @@ Flyway | Controle de versão do banco de dados
 Oracle Database | Banco de dados relacional
 Gradle | Gerenciamento de dependências e build
 Lombok | Redução de código boilerplate
+Render | Deploy da API
 
 📂 Estrutura do Projeto
 
@@ -152,7 +153,7 @@ Toda rota protegida exige o header Authorization: Bearer <token>. Requisições 
 O schema é inteiramente controlado por 14 migrations versionadas (V1 a V14), aplicadas na ordem de dependência de chave estrangeira: usuários e catálogos de referência primeiro, depois entidades que dependem deles. O Hibernate roda em modo validate — ele nunca altera o schema por conta própria, apenas confere que as entidades Java batem com o que o Flyway já criou, garantindo que o banco seja sempre resultado de uma migration rastreável, nunca de auto-geração implícita.
 
 ⚙️ Configuração do Projeto
-
+Para encontrar a API rodando online (deploy no Render) -> https://clyvocaresc.onrender.com/
 Antes de executar o projeto, configure as credenciais do Oracle no arquivo:
 
 src/main/resources/application.properties
@@ -335,14 +336,6 @@ Testes de validação
 > **Importante:** substitua `{ownerId}`, `{petId}`, `{appointmentId}`, `{treatmentId}` e `{id}` pelos IDs retornados pela API durante os testes.
 
 
-📈 Status do Projeto
-
-Camada de dados (Flyway) — concluída, 14 migrations aplicadas
-Camada de domínio (entidades, DTOs, repositórios) — concluída
-Camada de negócio (services) — concluída, incluindo os dois fluxos automáticos
-Camada de API (controllers) — concluída
-Spring Security (JWT, 2 perfis, proteção de rotas) — concluída
-Camada de visualização (frontend) — em desenvolvimento
 
 📈 Troubleshooting — Flyway / Oracle
 
