@@ -1,370 +1,275 @@
-🐾 ClyvoCare OS
-Plataforma inteligente de continuidade do cuidado veterinário
-Challenge 2026 • Java + Spring Boot
-
-📌 Sobre o Projeto
-
-O ClyvoCare OS é uma API REST desenvolvida em Java com Spring Boot com o objetivo de promover a continuidade do cuidado veterinário através de:
-
-monitoramento preventivo;
-alertas inteligentes;
-acompanhamento clínico contínuo;
-histórico longitudinal do pet.
-
-A solução foi criada com base no desafio proposto pela CLYVO VET — Infraestrutura do Futuro da Medicina Veterinária Digital.
-
-🎯 Objetivos da Solução
-
-A API foi projetada para oferecer funcionalidades capazes de:
-
-registrar e acompanhar o histórico clínico completo do pet (consultas, exames, tratamentos e vacinas);
-gerar lembretes automáticos de retorno após uma consulta concluída;
-calcular automaticamente a data da próxima dose de vacina e gerar o lembrete de reforço;
-controlar o acesso à API por perfil de usuário (tutor x profissional de saúde);
-versionar o schema do banco de dados de forma controlada e rastreável.
-
-Vídeo explicativo do projeto : https://youtu.be/IeVchmHa9M8?is=WBXgFtqu-lFC_sL0
-
-🛠️ Tecnologias Utilizadas
-
-Tecnologia | Descrição
---- | ---
-Java 25 | Linguagem principal
-Spring Boot 4.1 | Framework backend
-Spring Data JPA / Hibernate | Persistência de dados
-Spring Security | Autenticação e controle de acesso por perfil
-JWT (io.jsonwebtoken) | Autenticação stateless via token
-Bean Validation (Jakarta Validation) | Validações de formulário nos DTOs
-Flyway | Controle de versão do banco de dados
-Oracle Database | Banco de dados relacional
-Gradle | Gerenciamento de dependências e build
-Lombok | Redução de código boilerplate
-Render | Deploy da API
-
-📂 Estrutura do Projeto
-
-src/main/java/com/fiap/clyvocaresc
-│
-├── entity            → Entidades JPA (Pet, Owner, Appointment, Vaccination, etc.)
-├── entity/enums       → Enums de domínio (Role, PetSex, AppointmentStatus, etc.)
-├── repository         → Interfaces JpaRepository, uma por entidade
-├── service            → Regras de negócio e orquestração das transações
-├── dto/request        → DTOs de entrada, validados com Bean Validation
-├── dto/response        → DTOs de saída, isolando o cliente da API da estrutura do banco
-├── controller          → Endpoints REST
-├── security            → JWT, filtro de autenticação e configuração do Spring Security
-└── exception           → Exceções customizadas e tratamento global de erros
-
-src/main/resources/db/migration → Scripts SQL versionados do Flyway (V1 a V14)
-
-🗄️ Modelo de Dados
-
-O domínio foi consolidado em 14 entidades (13 de domínio + User de autenticação), organizadas em 5 grupos:
-
-Núcleo de identidade: User, Owner, Clinic, Veterinarian
-Catálogo de referência: City, Species, CatalogItem (vacinas e medicamentos unificados)
-Histórico clínico: Pet, Appointment, Exam, Treatment, Prescription, Vaccination
-Comunicação: Reminder
-
-Durante a modelagem, entidades redundantes ou puramente configuráveis (como um histórico de peso separado, já coberto por Pet e Appointment) foram deliberadamente eliminadas para reduzir acoplamento e volume de boilerplate sem perder informação de negócio.
-
-🚀 Funcionalidades da API
-
-✅ Autenticação e Cadastro
-
-Cadastro de tutor (User + Owner em uma única transação);
-cadastro de veterinário (User + Veterinarian em uma única transação);
-login com emissão de token JWT contendo o perfil do usuário.
-
-✅ Cadastro de Pets
-
-cadastrar pet, vinculado a um tutor e a uma espécie;
-listar pets de um tutor;
-buscar pet por ID;
-atualizar dados do pet.
-
-✅ Consultas (Appointment)
-
-agendar consulta;
-concluir consulta com diagnóstico e peso registrado;
-cancelar consulta;
-listar histórico de consultas do pet.
-
-✅ Vacinação (Vaccination)
-
-registrar aplicação de vacina, validando que o item de catálogo é do tipo correto;
-listar histórico vacinal do pet.
-
-✅ Exames e Tratamentos
-
-registrar exames e resultados;
-registrar tratamentos com controle de status (ativo, concluído, suspenso);
-registrar prescrições vinculadas a um tratamento.
-
-✅ Catálogo Clínico
-
-cadastro unificado de vacinas e medicamentos (CatalogItem), com validação de coerência entre tipo e campos específicos;
-cadastro de cidades, espécies, clínicas e veterinários.
-
-⭐ Diferenciais da API
-
-✅ Fluxo Completo #1 — Consulta com Lembrete Automático
-
-Ao concluir uma consulta (PATCH /api/appointments/{id}/complete), o sistema:
-
-registra diagnóstico, observações e peso atual do pet;
-atualiza o peso corrente do pet no histórico;
-cria automaticamente um Reminder de retorno, 15 dias após a data da consulta, sem qualquer ação manual adicional.
-
-✅ Fluxo Completo #2 — Vacinação com Cálculo de Reforço
-
-Ao aplicar uma vacina (POST /api/vaccinations), o sistema:
-
-valida que o item de catálogo informado é realmente do tipo VACCINE;
-calcula automaticamente a data da próxima dose (applicationDate + boosterIntervalDays do CatalogItem);
-cria automaticamente um Reminder do tipo vacina na data calculada.
-
-✅ Central de Alertas
-
-O tutor consulta seus lembretes pendentes (GET /api/owners/me/reminders) e acompanha o ciclo de vida de cada um (pendente → enviado → confirmado), sem que nenhum lembrete precise ser criado manualmente — todos nascem como efeito colateral de um fluxo clínico real.
-
-✅ Histórico Longitudinal do Pet
-
-Consultando os endpoints de um pet específico, é possível reconstruir a jornada clínica completa:
-
-consultas (GET /api/pets/{id}/appointments)
-exames (GET /api/pets/{id}/exams)
-tratamentos (GET /api/pets/{id}/treatments)
-vacinações (GET /api/pets/{id}/vaccinations)
-
-🔐 Spring Security
-
-A API implementa autenticação stateless via JWT, com dois perfis de usuário distintos e permissões diferentes:
-
-Perfil | Pode fazer
---- | ---
-OWNER (tutor) | Cadastrar e gerenciar os próprios pets, consultar histórico clínico, consultar e confirmar lembretes
-VETERINARIAN / CLINIC_ADMIN | Cadastrar catálogo clínico, agendar e concluir consultas, registrar exames/tratamentos/vacinações, gerenciar clínicas
-
-Toda rota protegida exige o header Authorization: Bearer <token>. Requisições sem token retornam 401, e requisições de um perfil sem permissão para a ação retornam 403 — o SecurityConfig mapeia essas regras rota a rota, e um AuthenticationEntryPoint/AccessDeniedHandler customizados garantem que essa distinção fique clara na resposta.
-
-📑 Versionamento do Banco de Dados (Flyway)
-
-O schema é inteiramente controlado por 14 migrations versionadas (V1 a V14), aplicadas na ordem de dependência de chave estrangeira: usuários e catálogos de referência primeiro, depois entidades que dependem deles. O Hibernate roda em modo validate — ele nunca altera o schema por conta própria, apenas confere que as entidades Java batem com o que o Flyway já criou, garantindo que o banco seja sempre resultado de uma migration rastreável, nunca de auto-geração implícita.
-
-⚙️ Configuração do Projeto
-
-Para encontrar a API rodando online (deploy no Render) -> https://clyvocaresc.onrender.com/
-
-
-Antes de executar o projeto localmente, configure as credenciais do Oracle no arquivo:
-
-src/main/resources/application.properties
-
-Também é necessário definir o segredo do JWT:
-
-app.jwt.secret=<sua-chave-secreta>
-app.jwt.expiration-ms=86400000
-
-⚙️ Instalação e Execução
-Pré-requisitos
-JDK 25 instalado (o projeto usa Gradle Toolchain, então ele mesmo baixa a versão certa se você tiver o SDK configurado na IDE)
-Acesso a um banco Oracle (o projeto foi desenvolvido usando o Oracle disponibilizado pela FIAP: oracle.fiap.com.br:1521:orcl)
-IntelliJ IDEA (recomendado) ou qualquer IDE com suporte a Gradle
-1. Clonar o repositório
-bash
-git clone <url-do-repositorio>
-cd ClyvoCareSC
-2. Configurar as credenciais (obrigatório antes de rodar)
-
-Por segurança, as credenciais do banco e o segredo do JWT não ficam fixos no código — são lidas de variáveis de ambiente. O application.properties já está preparado para isso:
-
-properties
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-app.jwt.secret=${JWT_SECRET}
-
-Configure essas 3 variáveis antes de rodar. No IntelliJ:
-
-Abra o dropdown de Run Configurations (topo da tela) → Edit Configurations...
-Selecione a configuration ClyvocarescApplication
-No campo Environment variables, adicione:
-DB_USERNAME=<seu_usuario_oracle>;DB_PASSWORD=<sua_senha_oracle>;JWT_SECRET=<uma_chave_secreta_longa_qualquer>
-Clique em Apply → OK
-
-Alternativa via terminal (Windows PowerShell):
-
-powershell
-$env:DB_USERNAME="seu_usuario"
-$env:DB_PASSWORD="sua_senha"
-$env:JWT_SECRET="uma-chave-secreta-bem-grande-aqui"
-
-Alternativa via terminal (Linux/Mac):
-
-bash
-export DB_USERNAME=seu_usuario
-export DB_PASSWORD=sua_senha
-export JWT_SECRET=uma-chave-secreta-bem-grande-aqui
-3. Rodar a aplicação
-bash
-./gradlew bootRun
-
-Ao subir, o Flyway aplica automaticamente as 14 migrations (V1 a V14) no schema configurado, criando todas as tabelas do zero caso ainda não existam. O log deve terminar com:
-
-Successfully applied 14 migrations to schema "..."
-
-A API sobe em http://localhost:8080.
-
-4. Testar o acesso
-
-Não existem usuários pré-cadastrados — o primeiro acesso é feito criando um usuário via endpoint de registro:
-
-POST http://localhost:8080/api/auth/register/owner
-Content-Type: application/json
-
-{
-  "username": "joao.tutor",
-  "password": "senha123",
-  "name": "João Silva",
-  "phone": "11999998888",
-  "document": "12345678901"
-}
-
-Depois, autentique-se para obter o token:
-
-POST http://localhost:8080/api/auth/login
-Content-Type: application/json
-
-{ "username": "joao.tutor", "password": "senha123" }
-
-A resposta traz o token JWT, que deve ser enviado no header Authorization: Bearer <token> em todas as demais requisições.
-
-Um guia de testes completo — cobrindo cadastro, login, controle de acesso por perfil e os dois fluxos automáticos do sistema — está disponível em guia-de-testes-clyvocare.md, na raiz do repositório.
-
-🧪 Testes da API
-
-Um guia de testes completo, cobrindo autenticação, controle de acesso por perfil e os dois fluxos automáticos, está disponível em guia-de-testes-clyvocare.md, com endpoints, JSONs de exemplo e o resultado esperado de cada chamada — incluindo os cenários negativos (401, 403, 400 e 404) usados para comprovar a Security e as validações.
-
-Uma collection exportada do Insomnia com todas as requisições já configuradas também está disponível no repositório.
-
-## Ordem de Testes da API
-
-Para executar os testes no Postman ou Insomnia, siga a ordem abaixo. Os IDs retornados nas etapas anteriores devem ser utilizados nas etapas seguintes.
-
-### 1. Segurança e autenticação
-
-1. `GET /api/species` sem token → **401 Unauthorized**
-2. `POST /api/auth/register/veterinarian` → cadastrar veterinário
-3. `POST /api/auth/register/owner` → cadastrar tutor
-4. `POST /api/auth/login` → login do veterinário → salvar `vetToken`
-5. `POST /api/auth/login` → login do tutor → salvar `ownerToken`
-6. Login com senha incorreta → **401/403**
-
-### 2. Permissões por perfil (RBAC)
-
-7. Tutor → `POST /api/catalog-items` → **403 Forbidden**
-8. Veterinário → `POST /api/catalog-items` → **201 Created** → salvar `catalogItemId`
-9. Veterinário → `POST /api/pets` → **403 Forbidden**
-
-### 3. Cadastros necessários
-
-10. Veterinário → `POST /api/cities` → salvar `cityId`
-11. Veterinário → `POST /api/species` → salvar `speciesId`
-12. Veterinário → `POST /api/catalog-items` (MEDICATION) → salvar `medicationId`
-13. Veterinário → `POST /api/clinics` → salvar `clinicId`
-
-### 4. Pet
-
-14. Tutor → `POST /api/pets` → salvar `petId`
-15. Tutor → `GET /api/owners/{ownerId}/pets`
-16. Tutor → `GET /api/pets/{petId}`
-
-### 5. Fluxo de consulta → Reminder automático
-
-17. Veterinário → `POST /api/appointments` → salvar `appointmentId`
-18. Veterinário → `PATCH /api/appointments/{appointmentId}/complete`
-19. Tutor → `GET /api/owners/me/reminders` → verificar Reminder de `APPOINTMENT`
-
-### 6. Fluxo de vacinação → Reminder automático
-
-20. Veterinário → `POST /api/vaccinations` usando o `catalogItemId` da vacina
-21. Tutor → `GET /api/owners/me/reminders` → verificar Reminder de `VACCINE`
-22. Veterinário → tentar vacinação com `medicationId` → **400 Bad Request**
-
-### 7. Tratamento, prescrição e exame
-
-23. Veterinário → `POST /api/treatments` → salvar `treatmentId`
-24. Veterinário → `POST /api/prescriptions`
-25. Veterinário → `PATCH /api/treatments/{treatmentId}/complete`
-26. Veterinário → `POST /api/exams`
-
-### 8. Ciclo de vida do Reminder
-
-27. `PATCH /api/reminders/{id}/sent` → status **SENT**
-28. `PATCH /api/reminders/{id}/confirmed` → status **CONFIRMED**
-
-### 9. Validações e erros
-
-29. `POST /api/species` com campo vazio → **400 Bad Request**
-30. `POST /api/auth/register/owner` com documento inválido → **400 Bad Request**
-31. Cadastro com username duplicado → **400 Bad Request**
-32. `GET /api/pets/9999` → **404 Not Found**
-
-### Fluxo principal
-
-```text
-Login
-  ↓
-Cadastros base
-  ↓
-Pet
-  ↓
-Consulta
-  ↓
-Conclusão da consulta
-  ↓
-Reminder automático
-  ↓
-Vacinação
-  ↓
-Reminder automático
-  ↓
-Tratamento / Prescrição / Exame
-  ↓
-Atualização do Reminder
-  ↓
-Testes de validação
-```
-
-> **Importante:** substitua `{ownerId}`, `{petId}`, `{appointmentId}`, `{treatmentId}` e `{id}` pelos IDs retornados pela API durante os testes.
-
-
-
-📈 Troubleshooting — Flyway / Oracle
-
-Durante a execução do projeto, pode ocorrer um erro do Flyway informando que uma SEQUENCE ou tabela já existe, como:
-
-ORA-00955: name is already used by an existing object
-
-Isso pode acontecer quando uma migration é interrompida após a criação de alguns objetos no banco, deixando objetos como SEQ_OWNERS registrados mesmo sem a migration ter sido concluída.
-
-Solução: limpar os objetos criados pela migration que falhou e o histórico do Flyway no banco local e executar a aplicação novamente para que as migrations sejam recriadas corretamente.
-
-Após a limpeza, executar:
-
-./gradlew clean bootRun
-
-Observação: esse procedimento é recomendado apenas para o ambiente local de desenvolvimento, pois a limpeza remove tabelas, sequences e o histórico de migrations.
-
-👨‍💻 Integrantes
-
-Nome | RM
---- | ---
-Vitória Valentina Maglio | RM 563509
-Marina Tamagnini Magalhães | RM 561786
-Mateus Granja dos Santos | RM 564930
-Felipe Maglio Filho | RM 563512
-João Pedro Bitencourt | RM 564339
-
-🐾 ClyvoCare OS
-Tecnologia e prevenção para o futuro da medicina veterinária digital.
+🐾 ClyvoCare OS — Backend Java | Sprint 4
+Challenge FIAP 2026 — Entrega Final
+API REST para continuidade do cuidado veterinário, histórico clínico e prevenção.
+
+Versão: 0.0.1-SNAPSHOT (backend)
+Tecnologias principais: Java 25 · Spring Boot 4.1.0 · Oracle Database · Spring Security · JWT · Flyway
+Instituição: FIAP — Análise e Desenvolvimento de Sistemas
+Repositório backend: VitoriaMaglio/ClyvoCareSC
+Aplicativo mobile: ClyvoCare OS — React Native/Expo
+API publicada: https://clyvocaresc.onrender.com
+Testes e evidências: ClyvoCareSCTests · Azure Boards
+Aviso: As informações e os lembretes da plataforma têm caráter de apoio e organização. Não substituem avaliação, orientação ou diagnóstico de um médico-veterinário.
+
+1. Sobre o projeto — problema e proposta
+   O acompanhamento da saúde dos animais pode envolver informações espalhadas entre clínicas, documentos e registros individuais. Consultas, vacinas, exames e tratamentos nem sempre ficam reunidos em um histórico acessível, dificultando a continuidade dos cuidados e a identificação de retornos e reforços necessários.
+
+O ClyvoCare OS foi desenvolvido para centralizar essas informações e apoiar o cuidado preventivo. A solução conecta o aplicativo Android a uma API REST em Java, responsável por autenticar usuários, aplicar regras de negócio, persistir registros clínicos e gerar lembretes a partir de eventos reais do atendimento veterinário.
+
+A proposta não se limita a cadastrar dados: o sistema transforma informações clínicas em ações de acompanhamento, como recomendar um retorno após uma consulta concluída e calcular a próxima dose de uma vacina.
+Diferenciais da solução
+1. Consulta com retorno automático. Ao concluir uma consulta, o backend registra diagnóstico e observações, pode atualizar o peso do pet e gera um lembrete de retorno 15 dias após a data da consulta, vinculado ao tutor e ao animal.
+
+2. Vacinação com reforço calculado. Ao registrar uma vacina, a API verifica se o item do catálogo é realmente do tipo VACCINE. Quando há um intervalo de reforço configurado, calcula nextDoseDate = applicationDate + boosterIntervalDays e cria o lembrete correspondente.
+
+3. Histórico longitudinal. Consultas, exames, tratamentos, prescrições e vacinações são associados às entidades do domínio, permitindo acompanhar a trajetória clínica do pet.
+
+4. Segurança por perfil. A aplicação diferencia tutores (OWNER) de profissionais (VETERINARIAN e CLINIC_ADMIN), com autenticação JWT e restrições por rota.
+
+5. Integração mobile e backend independente. A interface React Native consome a API por HTTPS; o Oracle nunca é acessado diretamente pelo aplicativo.
+   O módulo Clyvo IA, descrito no aplicativo mobile, apresenta orientações preventivas baseadas em regras e informações do sistema. Não deve ser apresentado como diagnóstico automatizado ou integração comprovada com IA generativa.
+
+2. Funcionalidades implementadas no backend
+   Módulo	Recursos da API
+   Autenticação	Cadastro de tutor e veterinário; login; emissão de JWT; senhas protegidas com BCrypt
+   Tutores e profissionais	Consulta e atualização de perfil; associação com usuário autenticado
+   Pets	Cadastro, consulta, atualização, exclusão e vínculo com tutor e espécie
+   Cadastros de referência	Cidades, espécies, clínicas e itens do catálogo clínico
+   Consultas	Agendamento, consulta por ID, histórico por pet, conclusão e cancelamento
+   Exames	Registro, consulta, atualização e exclusão
+   Tratamentos	Registro, atualização, conclusão e suspensão
+   Prescrições	Registro de prescrições vinculadas a tratamentos
+   Vacinação	Registro, histórico por pet, validação do catálogo e cálculo de reforço
+   Lembretes	Consulta de lembretes do tutor e atualização de status
+
+
+Fluxos de negócio que demonstram o diferencial
+Fluxo A — Consulta e retorno
+Pet cadastrado → Consulta agendada → Atendimento concluído
+→ Diagnóstico/observações registrados
+→ Reminder APPOINTMENT criado automaticamente
+→ Tutor consulta seus lembretes
+Fluxo B — Vacinação e reforço
+Pet cadastrado → Vacina selecionada no catálogo
+→ Aplicação registrada
+→ Próxima dose calculada, se houver intervalo
+→ Reminder VACCINE criado automaticamente
+O lembrete armazenado no Oracle é uma regra de negócio do backend. Já a notificação local do Android, descrita no README mobile, é agendada pelo aplicativo com expo-notifications para lembrar uma consulta próxima. São mecanismos distintos e complementares.
+3. Arquitetura e decisões técnicas
+   ┌───────────────────────────────────────┐
+   │ ClyvoCare OS — Android                │
+   │ React Native + Expo + TypeScript      │
+   └──────────────────┬────────────────────┘
+   │ HTTPS / JSON / JWT
+   ▼
+   ┌───────────────────────────────────────┐
+   │ API Java — Spring Boot 4.1.0          │
+   │ Render + Docker                       │
+   │                                       │
+   │ Controllers / DTOs                    │
+   │          ↓                            │
+   │ Services — regras de negócio          │
+   │          ↓                            │
+   │ Repositories — Spring Data JPA        │
+   │                                       │
+   │ Spring Security + filtro JWT          │
+   └──────────────────┬────────────────────┘
+   │ JDBC / Hibernate
+   ▼
+   ┌───────────────────────────────────────┐
+   │ Oracle Database — ambiente FIAP       │
+   │ Estrutura versionada com Flyway       │
+   └───────────────────────────────────────┘
+   O backend utiliza arquitetura em camadas, separando as responsabilidades:
+- Controllers: expõem os endpoints REST e recebem requisições HTTP.
+- DTOs: definem os dados de entrada e saída, evitando expor diretamente as entidades JPA.
+- Services: concentram validações e regras de negócio, como conclusão de consultas e cálculo de reforços.
+- Repositories: realizam consultas e persistência com Spring Data JPA.
+- Entities e Enums: representam o domínio clínico e seus estados.
+- Security: valida tokens JWT, autentica usuários e restringe ações por perfil.
+- Exception handling: centraliza respostas de erro.
+  Tecnologias e justificativas
+  Tecnologia	Justificativa
+  Java 25	Linguagem principal e tipagem forte para o domínio
+  Spring Boot 4.1.0	Estrutura de API REST e integração dos componentes
+  Spring Security + JWT	Autenticação sem sessão de servidor e autorização por perfil
+  BCrypt	Armazenamento de hashes de senha em vez de senhas em texto puro
+  Spring Data JPA / Hibernate	Mapeamento objeto-relacional e acesso ao Oracle
+  Bean Validation	Validação de dados recebidos pela API
+  Oracle Database	Persistência relacional e integridade referencial
+  Flyway	Evolução versionada e rastreável do schema
+  Gradle	Gerenciamento de dependências, compilação e testes
+  Docker + Render	Empacotamento reproduzível e hospedagem online da API
+  Git / GitHub	Versionamento e colaboração
+
+
+Decisão relevante: spring.jpa.hibernate.ddl-auto=validate faz o Hibernate validar a estrutura existente, enquanto as alterações no banco são controladas pelas migrations do Flyway. Essa separação evita depender da geração automática do schema pela aplicação.
+4. Modelagem e persistência — Oracle + Flyway
+   O banco é composto por 14 tabelas, definidas nas migrations V1 a V14, com chaves primárias, estrangeiras e restrições de integridade.
+   Migration	Tabela
+   V1	USERS
+   V2	CITIES
+   V3	SPECIES
+   V4	OWNERS
+   V5	PETS
+   V6	CATALOG_ITEMS
+   V7	CLINICS
+   V8	VETERINARIANS
+   V9	APPOINTMENTS
+   V10	EXAMS
+   V11	TREATMENTS
+   V12	PRESCRIPTIONS
+   V13	VACCINATIONS
+   V14	REMINDERS
+
+
+As relações principais permitem associar tutores a pets, pets a espécies e registros clínicos, veterinários e clínicas a atendimentos, tratamentos a prescrições e tutores/pets a lembretes. O catálogo clínico unifica itens utilizados em processos como vacinação e prescrição.
+
+Os scripts estão em src/main/resources/db/migration. O diagrama MER pode ser anexado à documentação da entrega em docs/mer-clyvocare.png (arquivo de evidência a adicionar ao repositório).
+Para demonstrar ao professor: abrir as migrations, mostrar uma FK no SQL e explicar como o relacionamento aparece nas entidades JPA. O modelo visual deve corresponder à versão efetivamente entregue do banco.
+
+5. Endpoints principais
+   Base local: http://localhost:8080
+   Base pública: https://clyvocaresc.onrender.com
+   Método	Endpoint	Finalidade
+   POST	/api/auth/register/owner	Cadastrar tutor
+   POST	/api/auth/register/veterinarian	Cadastrar veterinário
+   POST	/api/auth/login	Autenticar e obter JWT
+   GET / PUT	/api/owners/me	Consultar / atualizar perfil do tutor
+   GET	/api/species	Consultar espécies
+   GET	/api/cities	Consultar cidades
+   GET	/api/owners/{ownerId}/pets	Listar pets de um tutor
+   POST / PUT	/api/pets / /api/pets/{id}	Cadastrar / atualizar pet
+   GET	/api/pets/{id}	Consultar pet
+   GET	/api/pets/{petId}/appointments	Histórico de consultas
+   POST	/api/appointments	Agendar consulta
+   PATCH	/api/appointments/{id}/complete	Concluir consulta e gerar lembrete
+   PATCH	/api/appointments/{id}/cancel	Cancelar consulta
+   GET	/api/pets/{petId}/exams	Histórico de exames
+   GET	/api/pets/{petId}/treatments	Histórico de tratamentos
+   GET	/api/pets/{petId}/vaccinations	Histórico vacinal
+   POST	/api/vaccinations	Registrar vacina e calcular reforço
+   GET	/api/owners/me/reminders	Consultar lembretes do tutor
+   PATCH	/api/reminders/{id}/sent	Marcar lembrete como enviado
+   PATCH	/api/reminders/{id}/confirmed	Marcar lembrete como confirmado
+
+
+Outros endpoints de CRUD estão disponíveis nos controllers de CatalogItem, Clinic, City, Species, Exam, Treatment e Prescription.
+Segurança e autorização
+A autenticação utiliza Authorization: Bearer <token>. O Spring Security diferencia:
+- OWNER: perfil do tutor, incluindo operações de cadastro/atualização de pets e acesso a /api/owners/me.
+- VETERINARIAN / CLINIC_ADMIN: operações clínicas restritas, como registro de vacina, conclusão de consulta e gerenciamento do catálogo.
+- 401: requisição sem autenticação válida em rota protegida.
+- 403: usuário autenticado sem permissão para determinada ação.
+  Atenção para a demonstração: na versão do SecurityConfig.java analisada, POST /api/appointments exige VETERINARIAN ou CLINIC_ADMIN. Portanto, o fluxo de agendamento realizado diretamente por um tutor no mobile precisa ser validado com o backend efetivamente publicado antes de ser demonstrado como funcional.
+6. Instalação e execução local
+   Pré-requisitos
+- JDK 25 e Gradle Wrapper incluído no repositório.
+- Acesso autorizado ao Oracle Database.
+- IntelliJ IDEA ou terminal com Java configurado.
+- Docker Desktop, caso deseje executar em container.
+  Clonar o backend
+  git clone https://github.com/VitoriaMaglio/ClyvoCareSC.git
+  cd ClyvoCareSC
+  Configurar variáveis de ambiente
+  O application.properties lê as credenciais por variáveis, sem armazená-las no GitHub.
+
+PowerShell:
+$env:DB_URL="jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl"
+$env:DB_USERNAME="SEU_USUARIO_ORACLE"
+$env:DB_PASSWORD="SUA_SENHA_ORACLE"
+$env:JWT_SECRET="SUA_CHAVE_JWT_SEGURA"
+No IntelliJ, também é possível configurar em Run → Edit Configurations → Environment variables.
+
+Executar:
+.\gradlew.bat bootRun
+A API local utiliza http://localhost:8080, salvo configuração diferente da variável PORT.
+Executar com Docker
+docker build -t clyvocare-api .
+docker run --rm -p 8081:8080 `
+  -e DB_URL="$env:DB_URL" `
+-e DB_USERNAME="$env:DB_USERNAME" `
+  -e DB_PASSWORD="$env:DB_PASSWORD" `
+-e JWT_SECRET="$env:JWT_SECRET" `
+clyvocare-api
+Neste exemplo, a API fica acessível em http://localhost:8081. O container mantém a porta interna 8080.
+Segurança: nunca publique senhas do Oracle, segredos JWT ou tokens reais no README, em commits, em prints ou no vídeo.
+
+7. Deploy online — Render
+   O backend foi preparado com Dockerfile multi-stage, utilizando Java 25 para compilação e execução. A aplicação é hospedada como Web Service no Render, com as credenciais e o segredo JWT configurados nas variáveis de ambiente do serviço.
+
+URL do backend deste repositório: https://clyvocaresc.onrender.com
+
+A URL raiz (/) não é uma página HTML pública: ela pode retornar uma resposta de autenticação necessária, pois o Spring Security protege rotas sem autorização explícita. Para validar a API, utilize os endpoints apropriados, como POST /api/auth/login, com dados de teste.
+
+Observação operacional: o Oracle acadêmico possui limites de sessões simultâneas. Para reduzir o consumo de conexões, o projeto configura o HikariCP com DB_POOL_MAX (padrão 2) e DB_POOL_MIN_IDLE (padrão 0). Esse ajuste não substitui o monitoramento do limite definido no servidor Oracle.
+
+Integração com o mobile: o aplicativo recebe a URL da API por EXPO_PUBLIC_API_URL; o frontend comunica-se com o Render via HTTPS e não utiliza credenciais do Oracle.
+O README do mobile registra também uma API em https://clyvocare-api.onrender.com. São endereços diferentes: antes da gravação, confirmar qual backend foi utilizado no APK demonstrado e se sua versão corresponde ao código deste repositório.
+
+8. Testes, qualidade e evidências
+   O desenvolvimento incluiu 16 casos de testes manuais documentados no Azure Boards e 13 cenários automatizados no Postman, executados pelo Collection Runner no trabalho de testes do projeto. As evidências devem ser apresentadas junto aos resultados registrados, distinguindo os testes da API dos testes realizados no aplicativo mobile.
+
+Os cenários contemplam:
+- Cadastro e autenticação de tutores e profissionais.
+- Validação de dados e tratamento de duplicidades.
+- Autorização por perfil e tentativas de acesso indevido.
+- Cadastro e consulta de pets.
+- Regras de consultas e geração de lembretes.
+- Verificação de respostas HTTP, incluindo cenários positivos e negativos.
+  Execução de testes Java:
+  .\gradlew.bat test
+  A aprovação de testes Java deve ser comprovada pelo relatório gerado na execução; os resultados do Postman não substituem o relatório do Gradle.
+  Evidências recomendadas para a entrega
+  Evidência	O que demonstra
+  Backlog e casos de teste no Azure Boards	Planejamento, organização, rastreabilidade e Compliance
+  Repositório de testes	Documentação e artefatos de validação
+  Collection Runner do Postman	Execução dos cenários automatizados
+  Migrations V1–`V14` e MER	Modelagem relacional e integridade dos dados
+  Repositório GitHub	Versionamento do código e histórico das alterações
+  Render com status Live	Publicação da API online
+  Aplicativo Android em execução	Integração frontend/backend e experiência do usuário
+
+
+Integração multidisciplinar
+Compliance e gestão de qualidade: o Azure Boards foi utilizado para organizar o backlog, planejar atividades e registrar casos de teste, permitindo relacionar funcionalidades a verificações e evidências. Banco de Dados: a modelagem relacional e as migrations SQL demonstram a aplicação de chaves primárias, estrangeiras e restrições de integridade. Engenharia e Testes de Software: o Postman, os cenários manuais e as respostas HTTP permitem validar requisitos funcionais e regras de autorização. Desenvolvimento Mobile: o frontend React Native/Expo demonstra o consumo da API Java em uma interface voltada ao tutor.
+
+9. Organização do repositório
+    ClyvoCareSC/
+    ├── src/
+    │   ├── main/
+    │   │   ├── java/com/fiap/clyvocaresc/
+    │   │   │   ├── controller/
+    │   │   │   ├── dto/request/
+    │   │   │   ├── dto/response/
+    │   │   │   ├── entity/
+    │   │   │   ├── exception/
+    │   │   │   ├── repository/
+    │   │   │   ├── security/
+    │   │   │   └── service/
+    │   │   └── resources/
+    │   │       ├── application.properties
+    │   │       └── db/migration/ (V1 a V14)
+    │   └── test/
+    ├── Dockerfile
+    ├── build.gradle
+    ├── gradlew
+    ├── gradlew.bat
+    └── README.md
+    Para complementar a entrega: anexar o MER e capturas do Azure Boards, Postman e Render em uma pasta docs/evidencias/, mantendo nomes descritivos e sem dados sensíveis.
+10. Equipe
+    Integrante	RM
+    Vitória Valentina Maglio	563509
+    Marina Tamagnini Magalhães	561786
+    Mateus Granja dos Santos	564930
+    Felipe Maglio Filho	563512
+    João Pedro Bitencourt Goldoni	564339
+
+
+FIAP — Análise e Desenvolvimento de Sistemas · Challenge 2026 · Sprint 4
+11. Considerações finais
+    O ClyvoCare OS reúne desenvolvimento backend, segurança, modelagem relacional, testes e integração mobile em uma solução orientada à continuidade do cuidado veterinário. Seu principal diferencial é a aplicação de regras preventivas a partir de eventos clínicos reais, como retornos após consultas e reforços de vacinação, mantendo os registros vinculados ao histórico de cada animal.
+
+O projeto demonstra, de forma contextualizada, conceitos de Java, orientação a objetos, APIs REST, Spring Boot, Spring Security, JWT, JPA, Oracle, Flyway, Docker, testes e versionamento, com uma API publicada e integrada à proposta mobile.
+
+🐾 ClyvoCare OS — Cuidado contínuo para quem faz parte da família.

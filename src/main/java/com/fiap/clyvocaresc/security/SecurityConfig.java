@@ -58,7 +58,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // troca pelos endereços reais do front
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:19006",
@@ -109,7 +108,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/clinics/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/clinics/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/api/appointments/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/appointments/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/appointments/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/exams/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/exams/**").hasAnyRole("VETERINARIAN", "CLINIC_ADMIN")
